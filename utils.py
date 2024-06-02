@@ -31,6 +31,13 @@ def load_detect_model():
     return model, tokenizer
 
 
+def load_models():
+    print("Loading models...")
+    model_0, tokenizer_0 = load_neighbour_model()
+    model_1, tokenizer_1 = load_detect_model()
+    models = [model_0, tokenizer_0, model_1, tokenizer_1]
+    return models
+
 def loss_func(input_ids, model):
     loss = 0
     for id in input_ids:
@@ -106,10 +113,10 @@ def neighbourhood_generation(model, tokenizer, input_text, n, m, threshold):
 
 
 
-model_0, tokenizer_0 = load_neighbour_model()
-text = "The animal didn't cross the street because it was too tired. It was too tired to cross the street."
-n = 10  # number of neighbors
-m = 2  # number of word replacements
-neighbors = neighbourhood_generation(model_0, tokenizer_0, text, n, m, 0)
-for neighbor in neighbors:
-    print(neighbor)
+# model_0, tokenizer_0 = load_neighbour_model()
+# text = "The animal didn't cross the street because it was too tired. It was too tired to cross the street."
+# n = 10  # number of neighbors
+# m = 2  # number of word replacements
+# neighbors = neighbourhood_generation(model_0, tokenizer_0, text, n, m, 0)
+# for neighbor in neighbors:
+#     print(neighbor)

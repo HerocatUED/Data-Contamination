@@ -30,7 +30,7 @@ def inference(models, data):
         # TODO
         with open("logs/loss_log1.txt", "a", encoding="utf-8") as f:
             f.write(f"index: {i} loss: {loss} mean neighbour loss: {mean_loss}\n")
-        if loss - mean_loss < -0.2:
+        if loss - mean_loss < -0.6:
             result[i] = 1
         delta_loss[i] = loss - mean_loss
         losses[i] = loss
@@ -38,39 +38,38 @@ def inference(models, data):
     return result, delta_loss
 
 
-def main():
-    # load model
-    print("Loading models...")
-    model_0, tokenizer_0 = load_neighbour_model()
-    model_1, tokenizer_1 = load_detect_model()
-    models = [model_0, tokenizer_0, model_1, tokenizer_1]
+def validation(models):
     # validation
     print("Validating...")
     with open("dataset/valid.json", "r", encoding="utf-8") as f:
         val_data = json.load(f)
-        val_data = val_data[:20] + val_data[-20:]
+        val_data = val_data[:10] + val_data[-10:]
         label = [data["label"] == "dirty" for data in val_data]
         label = np.array(label, dtype=int)
         predict, delta_loss = inference(models, [data["text"] for data in val_data])
         plt.scatter(x=delta_loss, y=label, s=5)
         plt.savefig("logs/delta_loss1.png")
-        # score = roc_auc_score(label, np.hstack(predict, 1 - predict))
-        # print(score)
-    # # test
-    # print("testing")
-    # with open("dataset/test.json", "r", encoding="utf-8") as f:
-    #     test_data = json.load(f)
-    #     test_text = [data["text"] for data in test_data]
-    #     predict = inference(models, test_text)
-    # with open("dataset/output.json", "w", encoding="utf-8") as f:
-    #     output = [{"text": "none", "score": "none"}] * len(test_data)
-    #     for i, data, score in enumerate(zip(test_text, predict)):
-    #         output[i]["text"] = data
-    #         output[i]["score"] = score
-    #     json.dump(output, f)
+        
+        score = roc_auc_score(label, np.hstack([predict, 1 - predict]))
+        print(score)
+        
+        
+def test(models):
+    # test
+    print("testing")
+    with open("dataset/test.json", "r", encoding="utf-8") as f:
+        test_data = json.load(f)
+        test_text = [data["text"] for data in test_data]
+        predict = inference(models, test_text)
+    with open("dataset/output.json", "w", encoding="utf-8") as f:
+        output = [{"text": "none", "score": "none"}] * len(test_data)
+        for i, data, score in enumerate(zip(test_text, predict)):
+            output[i]["text"] = data
+            output[i]["score"] = score
+        json.dump(output, f)
 
 
-def plot():
+def plot_loss():
     print("Loading model")
     model_1, tokenizer_1 = load_detect_model()
     with open("dataset/valid.json", "r", encoding="utf-8") as f:
@@ -89,5 +88,7 @@ def plot():
 
 
 if __name__ == "__main__":
-    main()
-    # plot()
+    models = load_models()
+    validation(models)
+    test(models)
+    # plot_loss()
