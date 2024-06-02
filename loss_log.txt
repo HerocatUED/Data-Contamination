@@ -1,9 +1,0 @@
-loss log
-index: 0 loss: 2.171875 mean neighbour loss: 3.155625
-index: 1 loss: 2.890625 mean neighbour loss: 3.70296875
-index: 2 loss: 2.890625 mean neighbour loss: 3.44921875
-index: 3 loss: 2.78125 mean neighbour loss: 3.4878125
-index: 4 loss: 2.546875 mean neighbour loss: 3.37109375
-index: 5 loss: 2.375 mean neighbour loss: 3.26828125
-index: 6 loss: 2.6875 mean neighbour loss: 3.12234375
-index: 7 loss: 2.578125 mean neighbour loss: 3.5746875

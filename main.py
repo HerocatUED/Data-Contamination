@@ -16,7 +16,7 @@ def inference(models, data):
     result = np.zeros(len(data))
     losses = np.zeros(len(data))
     delta_loss = np.zeros(len(data))
-    with open("loss_log.txt", "w", encoding="utf-8") as f:
+    with open("logs/loss_log.txt", "w", encoding="utf-8") as f:
         f.write("loss log\n")
     for i in tqdm(range(len(data))):
         neighbours = neighbourhood_generation(model_0, tokenizer_0, data[i], n, m, threshold)
@@ -28,13 +28,13 @@ def inference(models, data):
         ]
         mean_loss = loss_func(batch, model_1)
         # TODO
-        with open("loss_log.txt", "a", encoding="utf-8") as f:
+        with open("logs/loss_log.txt", "a", encoding="utf-8") as f:
             f.write(f"index: {i} loss: {loss} mean neighbour loss: {mean_loss}\n")
         if loss - mean_loss < -0.2:
             result[i] = 1
         delta_loss[i] = loss - mean_loss
         losses[i] = loss
-        np.savez("record.npz", loss=losses, delta_loss=delta_loss)
+        np.savez("logs/record.npz", loss=losses, delta_loss=delta_loss)
     return result, delta_loss
 
 
@@ -53,7 +53,7 @@ def main():
         label = np.array(label, dtype=int)
         predict, delta_loss = inference(models, [data["text"] for data in val_data])
         plt.scatter(x=delta_loss, y=label, s=5)
-        plt.savefig("delta_loss.png")
+        plt.savefig("logs/delta_loss.png")
         # score = roc_auc_score(label, np.hstack(predict, 1 - predict))
         # print(score)
     # # test
@@ -85,7 +85,7 @@ def plot():
             ).input_ids.to(device)
             loss[i] = loss_func(input_ids, model_1)
         plt.scatter(x=loss, y=label, s=5)
-        plt.savefig("loss.png")
+        plt.savefig("logs/loss.png")
 
 
 if __name__ == "__main__":
