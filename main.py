@@ -43,14 +43,13 @@ def validation(models):
     print("Validating...")
     with open("dataset/valid.json", "r", encoding="utf-8") as f:
         val_data = json.load(f)
-        val_data = val_data[:10] + val_data[-10:]
+        val_data = val_data[:20] + val_data[-20:]
         label = [data["label"] == "dirty" for data in val_data]
         label = np.array(label, dtype=int)
         predict, delta_loss = inference(models, [data["text"] for data in val_data])
         plt.scatter(x=delta_loss, y=label, s=5)
         plt.savefig("logs/delta_loss1.png")
-        
-        score = roc_auc_score(label, np.hstack([predict, 1 - predict]))
+        score = roc_auc_score(label, score_func(delta_loss))
         print(score)
         
         
@@ -60,12 +59,12 @@ def test(models):
     with open("dataset/test.json", "r", encoding="utf-8") as f:
         test_data = json.load(f)
         test_text = [data["text"] for data in test_data]
-        predict = inference(models, test_text)
+        predict, delta_loss = inference(models, test_text)
     with open("dataset/output.json", "w", encoding="utf-8") as f:
         output = [{"text": "none", "score": "none"}] * len(test_data)
-        for i, data, score in enumerate(zip(test_text, predict)):
+        for i, data, p in enumerate(zip(test_text, predict)):
             output[i]["text"] = data
-            output[i]["score"] = score
+            output[i]["score"] = score_func(p)
         json.dump(output, f)
 
 
@@ -74,7 +73,6 @@ def plot_loss():
     model_1, tokenizer_1 = load_detect_model()
     with open("dataset/valid.json", "r", encoding="utf-8") as f:
         val_data = json.load(f)
-        # val_data = val_data[:50] + val_data[-50:]
         label = [data["label"] == "dirty" for data in val_data]
         label = np.array(label, dtype=int)
         loss = np.zeros_like(label, dtype=float)

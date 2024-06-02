@@ -1,7 +1,8 @@
 import os
 import random
 import re
-
+import numpy as np
+import math
 import torch
 import torch.nn.functional as F
 from transformers import (
@@ -45,6 +46,10 @@ def loss_func(input_ids, model):
         outputs = model(input_ids=id[None, :], labels=id[None, :])
         loss += outputs.loss.item()
     return loss / len(input_ids)
+
+def score_func(delta_loss, a = 15, b = -0.6):
+    delta_loss = np.array(delta_loss)
+    return 1 / (1 + np.exp(a * delta_loss - b))
 
 
 def neighbour(model, tokenizer, text, threshold):
