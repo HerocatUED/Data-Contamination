@@ -44,7 +44,7 @@ def neighbour(model, tokenizer, text, threshold):
     # Tokenize input text
     inputs = tokenizer(text, return_tensors="pt")
     input_ids = inputs.input_ids.to(device)
-    tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
+    # tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
     # Get embeddings
     with torch.no_grad():
         embeddings = model.bert.embeddings.word_embeddings(input_ids)
@@ -53,12 +53,11 @@ def neighbour(model, tokenizer, text, threshold):
         return p_swap_word / (1 - p_word + EPS)
     # Find top m replacements for each token
     top_replacements = []
-    for i, token in enumerate(tokens):
-        if token in ["[CLS]", "[SEP]"]:
-            continue
+    for i, id in enumerate(input_ids[0]):
         with torch.no_grad():
-            embeddings[0][i] = F.dropout(embeddings[0][i], p=0.5, training=True)
-            outputs = model(inputs_embeds=embeddings).logits
+            embed=embeddings.clone()
+            embed[0][i] = F.dropout(embed[0][i], p=0.5, training=True)
+            outputs = model(inputs_embeds=embed).logits
             probs = F.softmax(outputs, dim=-1)
         p_word = probs[0, i, input_ids[0, i]].item()
         probs[0, i, input_ids[0, i].item()] = 0
@@ -69,39 +68,39 @@ def neighbour(model, tokenizer, text, threshold):
     # Generate neighbors
     top_replacements.sort(key=lambda x: x[1][1], reverse=True)
     top_replacements = list(filter(lambda x: x[1][1] > threshold, top_replacements))
-    return top_replacements, tokens
+    return top_replacements, input_ids
 
 
 def neighbourhood_generation(model, tokenizer, input_text, n, m, threshold):
     texts = re.split(r'(?<=[.?!])', input_text)
     texts = [text.strip() for text in texts if text.strip()]
     top_replacements=[]
-    tokens=[]
+    ids=[]
     token_len=0
     for i,text in enumerate(texts):
         top_replacement, token = neighbour(model, tokenizer, text, threshold)
         for x in top_replacement:
             top_replacements.append((x[0]+token_len-(1 if i!=0 else 0), x[1]))
         if i == 0:
-            tokens += token[:-1]
-            token_len += len(token[:-1])
+            ids += token[0][:-1].tolist()
+            token_len += len(token[0][:-1])
         elif i == len(texts)-1:
-            tokens += token[1:]
-            token_len += len(token[1:])
+            ids += token[0][1:].tolist()
+            token_len += len(token[0][1:])
         else:
-            tokens += token[1:-1]
-            token_len += len(token[1:-1])
+            ids += token[0][1:-1].tolist()
+            token_len += len(token[0][1:-1])
     # Generate neighbors
     neighbors = []
     top_replacements.sort(key=lambda x: x[1][1], reverse=True)
     top_replacements = list(filter(lambda x: x[1][1] > threshold, top_replacements))
     if len(top_replacements) == 0: return [input_text] * n
     for i in range(n):
-        new_text = tokens[:]
+        new_text = ids[:]
         replacements = top_replacements[i:i+1]
         for k, (j, _) in replacements:
-            new_text[k] = tokenizer.convert_ids_to_tokens(j)
-        neighbors.append(" ".join((new_text)[1:-1]).replace(" ##", ""))
+            new_text[k] = j
+        neighbors.append(tokenizer.decode(torch.tensor(new_text[1:-1])))
     return neighbors
 
 
@@ -109,8 +108,8 @@ def neighbourhood_generation(model, tokenizer, input_text, n, m, threshold):
 
 model_0, tokenizer_0 = load_neighbour_model()
 text = "The animal didn't cross the street because it was too tired. It was too tired to cross the street."
-n = 5  # number of neighbors
+n = 10  # number of neighbors
 m = 2  # number of word replacements
-neighbors = neighbourhood_generation(model_0, tokenizer_0, text, n, m, 0.9)
+neighbors = neighbourhood_generation(model_0, tokenizer_0, text, n, m, 0)
 for neighbor in neighbors:
     print(neighbor)
