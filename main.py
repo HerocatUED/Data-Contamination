@@ -43,7 +43,7 @@ def validation(models):
     print("Validating...")
     with open("dataset/valid.json", "r", encoding="utf-8") as f:
         val_data = json.load(f)
-        val_data = val_data[:20] + val_data[-20:]
+        val_data = val_data[:200] + val_data[-200:]
         label = [data["label"] == "dirty" for data in val_data]
         label = np.array(label, dtype=int)
         predict, delta_loss = inference(models, [data["text"] for data in val_data])
@@ -56,16 +56,18 @@ def validation(models):
 def test(models):
     # test
     print("testing")
-    with open("dataset/test1.json", "r", encoding="utf-8") as f:
+    with open("dataset/test.json", "r", encoding="utf-8") as f:
         test_data = json.load(f)
         test_text = [data["text"] for data in test_data]
         predict, delta_loss = inference(models, test_text)
-    with open("dataset/output1.json", "w", encoding="utf-8") as f:
-        output = [{"text": "none", "score": "none"}] * len(test_data)
-        for i, (data, d_loss) in enumerate(zip(test_text, delta_loss)):
-            output[i]["text"] = data
-            output[i]["score"] = score_func(d_loss)
-        json.dump(output, f,ensure_ascii=False, indent=4)
+    with open("dataset/output.json", "w", encoding="utf-8") as f:
+        output = []
+        for data, d_loss in zip(test_text, delta_loss):
+            tmp = {}
+            tmp["text"] = data
+            tmp["score"] = score_func(d_loss)
+            output.append(tmp)
+        json.dump(output, f, ensure_ascii=False, indent=4)
 
 
 def plot_loss():
@@ -87,6 +89,6 @@ def plot_loss():
 
 if __name__ == "__main__":
     models = load_models()
-    validation(models)
+    # validation(models)
     test(models)
     # plot_loss()
