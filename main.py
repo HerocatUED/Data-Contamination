@@ -12,18 +12,16 @@ def inference(models, data):
     Output: probability of dirty.
     """
     model_0, tokenizer_0, model_1, tokenizer_1 = models
-    n, m, threshold = 5, 2, 0.9
+    n, m, threshold = 100, 100, 0.9
     result = np.zeros(len(data))
+    losses = np.zeros(len(data))
+    delta_loss = np.zeros(len(data))
     with open("loss_log.txt", "w", encoding="utf-8") as f:
         f.write("loss log\n")
     for i in tqdm(range(len(data))):
-        neighbours = neighbourhood_generation(
-            model_0, tokenizer_0, data[i], n, m, threshold
-        )
+        neighbours = neighbourhood_generation(model_0, tokenizer_0, data[i], n, m, threshold)
         assert len(neighbours) <= n
-        loss = loss_func(
-            tokenizer_1(data[i], return_tensors="pt").input_ids.to(device), model_1
-        )
+        loss = loss_func(tokenizer_1(data[i], return_tensors="pt").input_ids.to(device), model_1)
         batch = [
             tokenizer_1(neighbour, return_tensors="pt").input_ids[0].to(device)
             for neighbour in neighbours
@@ -34,7 +32,10 @@ def inference(models, data):
             f.write(f"index: {i} loss: {loss} mean neighbour loss: {mean_loss}\n")
         if loss - mean_loss < -0.2:
             result[i] = 1
-    return result
+        delta_loss[i] = loss - mean_loss
+        losses[i] = loss
+        np.savez("record.npz", loss=losses, delta_loss=delta_loss)
+    return result, delta_loss
 
 
 def main():
@@ -47,24 +48,26 @@ def main():
     print("Validating...")
     with open("dataset/valid.json", "r", encoding="utf-8") as f:
         val_data = json.load(f)
-        val_data = val_data[:50] + val_data[-50:]
+        # val_data = val_data[:10] + val_data[-10:]
         label = [data["label"] == "dirty" for data in val_data]
-        label = np.array(label)
-        predict = inference(models, [data["text"] for data in val_data])
-        score = roc_auc_score(label, np.hstack(predict, 1 - predict))
-        print(score)
-    # test
-    print("testing")
-    with open("dataset/test.json", "r", encoding="utf-8") as f:
-        test_data = json.load(f)
-        test_text = [data["text"] for data in test_data]
-        predict = inference(models, test_text)
-    with open("dataset/output.json", "w", encoding="utf-8") as f:
-        output = [{"text": "none", "score": "none"}] * len(test_data)
-        for i, data, score in enumerate(zip(test_text, predict)):
-            output[i]["text"] = data
-            output[i]["score"] = score
-        json.dump(output, f)
+        label = np.array(label, dtype=int)
+        predict, delta_loss = inference(models, [data["text"] for data in val_data])
+        plt.scatter(x=delta_loss, y=label, s=5)
+        plt.savefig("delta_loss.png")
+        # score = roc_auc_score(label, np.hstack(predict, 1 - predict))
+        # print(score)
+    # # test
+    # print("testing")
+    # with open("dataset/test.json", "r", encoding="utf-8") as f:
+    #     test_data = json.load(f)
+    #     test_text = [data["text"] for data in test_data]
+    #     predict = inference(models, test_text)
+    # with open("dataset/output.json", "w", encoding="utf-8") as f:
+    #     output = [{"text": "none", "score": "none"}] * len(test_data)
+    #     for i, data, score in enumerate(zip(test_text, predict)):
+    #         output[i]["text"] = data
+    #         output[i]["score"] = score
+    #     json.dump(output, f)
 
 
 def plot():

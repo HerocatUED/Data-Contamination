@@ -1,17 +1,9 @@
 loss log
-index: 0 loss: 2.171875 mean neighbour loss: 3.015625
-index: 1 loss: 2.890625 mean neighbour loss: 3.60625
-index: 2 loss: 2.890625 mean neighbour loss: 3.315625
-index: 3 loss: 2.78125 mean neighbour loss: 3.465625
-index: 4 loss: 2.546875 mean neighbour loss: 3.284375
-index: 5 loss: 2.375 mean neighbour loss: 3.125
-index: 6 loss: 2.6875 mean neighbour loss: 3.015625
-index: 7 loss: 2.578125 mean neighbour loss: 3.409375
-index: 8 loss: 2.28125 mean neighbour loss: 3.2
-index: 9 loss: 2.640625 mean neighbour loss: 3.175
-index: 10 loss: 2.453125 mean neighbour loss: 2.965625
-index: 11 loss: 2.953125 mean neighbour loss: 3.365625
-index: 12 loss: 2.8125 mean neighbour loss: 3.290625
-index: 13 loss: 2.5625 mean neighbour loss: 3.284375
-index: 14 loss: 2.859375 mean neighbour loss: 3.33125
-index: 15 loss: 2.53125 mean neighbour loss: 3.290625
+index: 0 loss: 2.171875 mean neighbour loss: 3.155625
+index: 1 loss: 2.890625 mean neighbour loss: 3.70296875
+index: 2 loss: 2.890625 mean neighbour loss: 3.44921875
+index: 3 loss: 2.78125 mean neighbour loss: 3.4878125
+index: 4 loss: 2.546875 mean neighbour loss: 3.37109375
+index: 5 loss: 2.375 mean neighbour loss: 3.26828125
+index: 6 loss: 2.6875 mean neighbour loss: 3.12234375
+index: 7 loss: 2.578125 mean neighbour loss: 3.5746875

@@ -87,7 +87,7 @@ def neighbourhood_generation(model, tokenizer, text, n, m, threshold):
     top_replacements = list(filter(lambda x: x[1][1] > threshold, top_replacements))
     for i in range(n):
         new_text = tokens[:]
-        replacements = random.choices(top_replacements, k=m)
+        replacements = random.choices(top_replacements, k=m, weights=[top_replacements[i][1][1] for i in range(len(top_replacements))])
         for k, (j, _) in replacements:
             new_text[k] = tokenizer.convert_ids_to_tokens(j)
         neighbors.append(" ".join((new_text + success_tokens)[1:-1]).replace(" ##", ""))
