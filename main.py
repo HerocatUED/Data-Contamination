@@ -56,16 +56,16 @@ def validation(models):
 def test(models):
     # test
     print("testing")
-    with open("dataset/test.json", "r", encoding="utf-8") as f:
+    with open("dataset/test1.json", "r", encoding="utf-8") as f:
         test_data = json.load(f)
         test_text = [data["text"] for data in test_data]
         predict, delta_loss = inference(models, test_text)
-    with open("dataset/output.json", "w", encoding="utf-8") as f:
+    with open("dataset/output1.json", "w", encoding="utf-8") as f:
         output = [{"text": "none", "score": "none"}] * len(test_data)
-        for i, data, p in enumerate(zip(test_text, predict)):
+        for i, (data, d_loss) in enumerate(zip(test_text, delta_loss)):
             output[i]["text"] = data
-            output[i]["score"] = score_func(p)
-        json.dump(output, f)
+            output[i]["score"] = score_func(d_loss)
+        json.dump(output, f,ensure_ascii=False, indent=4)
 
 
 def plot_loss():
